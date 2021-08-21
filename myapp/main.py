@@ -4,8 +4,12 @@ import joblib
 import numpy as np
 from myapp import myapp
 
+import time
+import uwsgi
+import git
 
-model = joblib.load("/home/duyguay/myapp/model")
+
+model = joblib.load("/home/duyguay/deployment/myapp/model")
 
 def ValuePredictor(to_predict_list):
     to_predict = np.array(to_predict_list).reshape(1,len(to_predict_list))
@@ -28,6 +32,15 @@ def predict():
     else:
         prediction='Congrats ! you are Healthy' 
     return render_template("index.html", prediction_text=prediction)
+
+@myapp.route("/update", methods = ["POST"])
+def update():
+    if request.method == 'POST':
+        g = git.cmd.Git('/home/duyguay/deployment/')
+        g.pull()
+        time.sleep(5)
+        uwsgi.reload()
+        return ''
 
 if __name__ == "__main__":
     myapp.run(debug=True)
